@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHUEL LI YU</title>
+<title>CRUEL LI YU</title>
 
 <style>
 body{
@@ -14,7 +14,6 @@ body{
   text-align:center;
 }
 
-/* 공통 화면 */
 .screen{
   display:none;
   height:100vh;
@@ -27,7 +26,6 @@ body{
   display:flex;
 }
 
-/* 버튼 */
 button{
   padding:12px 20px;
   border:none;
@@ -42,18 +40,12 @@ button{
   color:#5d8aa8;
 }
 
-/* 바인더 카드 */
-.binder{
-  width:120px;
-  height:160px;
-  background:white;
+.cover-option{
+  width:100px;
+  height:140px;
   border-radius:15px;
-  color:#5d8aa8;
-  display:flex;
-  justify-content:center;
-  align-items:center;
   margin:10px;
-  font-weight:bold;
+  cursor:pointer;
 }
 
 .grid{
@@ -62,7 +54,6 @@ button{
   justify-content:center;
 }
 
-/* 속지 레이아웃 */
 .page{
   width:250px;
   height:350px;
@@ -87,45 +78,61 @@ button{
 
 <body>
 
-<!-- 1️⃣ 메인 -->
+<!-- 1 메인 -->
 <div id="main" class="screen active">
   <h1>CRUEL LI YU</h1>
-  <p>PHOTO CARD BINDER</p>
   <button class="main-btn" onclick="goTo('binderScreen')">MY</button>
 </div>
 
-<!-- 2️⃣ 바인더 목록 -->
+<!-- 2 바인더 목록 -->
 <div id="binderScreen" class="screen">
   <h2>MY BINDER</h2>
-  <div class="grid" id="binderList"></div>
-  <button onclick="goTo('createScreen')">＋</button>
+  <button onclick="goTo('coverScreen')">＋</button>
 </div>
 
-<!-- 3️⃣ 바인더 생성 -->
-<div id="createScreen" class="screen">
-  <h2>바인더 만들기</h2>
-  <button onclick="chooseLayout('one')">1칸</button>
-  <button onclick="chooseLayout('three')">3칸</button>
-  <button onclick="chooseLayout('four')">4칸</button>
+<!-- 3 표지 선택 -->
+<div id="coverScreen" class="screen">
+  <h2>표지 선택</h2>
+  <div class="grid">
+    <div class="cover-option" style="background:#ffb6c1" onclick="selectCover('#ffb6c1')"></div>
+    <div class="cover-option" style="background:#87cefa" onclick="selectCover('#87cefa')"></div>
+    <div class="cover-option" style="background:#c3b1e1" onclick="selectCover('#c3b1e1')"></div>
+  </div>
   <button onclick="goTo('binderScreen')">← 뒤로</button>
 </div>
 
-<!-- 4️⃣ 속지 보기 -->
+<!-- 4 속지 선택 -->
+<div id="layoutScreen" class="screen">
+  <h2>속지 선택</h2>
+  <button onclick="chooseLayout('one')">1칸</button>
+  <button onclick="chooseLayout('three')">3칸</button>
+  <button onclick="chooseLayout('four')">4칸</button>
+</div>
+
+<!-- 5 완성 화면 -->
 <div id="pageScreen" class="screen">
-  <h2>속지</h2>
+  <h2>완성된 바인더</h2>
   <div id="pagePreview"></div>
   <button onclick="goTo('binderScreen')">홈으로</button>
 </div>
 
 <script>
+let selectedCoverColor = "#ffffff";
+
 function goTo(screenId){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
 }
 
+function selectCover(color){
+  selectedCoverColor = color;
+  goTo('layoutScreen');
+}
+
 function chooseLayout(type){
   const page = document.createElement('div');
   page.className = 'page '+type;
+  page.style.background = selectedCoverColor;
 
   let slots = 1;
   if(type==='three') slots=3;
