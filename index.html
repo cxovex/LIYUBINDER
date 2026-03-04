@@ -8,12 +8,13 @@
 <style>
 body{
   margin:0;
-  font-family: Arial, sans-serif;
+  font-family:Arial;
   background:#a9c3d6;
-  color:white;
   text-align:center;
+  color:white;
 }
 
+/* 화면 */
 .screen{
   display:none;
   height:100vh;
@@ -27,25 +28,28 @@ body{
 }
 
 button{
-  padding:12px 20px;
+  padding:10px 20px;
   border:none;
   border-radius:20px;
   margin:10px;
-  font-size:16px;
   cursor:pointer;
 }
 
-.main-btn{
-  background:white;
-  color:#5d8aa8;
-}
-
-.cover-option{
-  width:100px;
-  height:140px;
+/* 바인더 */
+.binder{
+  width:120px;
+  height:160px;
   border-radius:15px;
-  margin:10px;
+  margin:15px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
   cursor:pointer;
+  transition:0.4s;
+}
+
+.binder:hover{
+  transform:scale(1.05);
 }
 
 .grid{
@@ -53,102 +57,65 @@ button{
   flex-wrap:wrap;
   justify-content:center;
 }
-
-.page{
-  width:250px;
-  height:350px;
-  background:white;
-  border-radius:10px;
-  margin-top:20px;
-  display:grid;
-  gap:5px;
-  padding:10px;
-}
-
-.one{ grid-template-columns:1fr; }
-.three{ grid-template-columns:1fr; grid-template-rows:repeat(3,1fr); }
-.four{ grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); }
-
-.slot{
-  background:#eaeaea;
-  border-radius:5px;
-}
 </style>
 </head>
 
 <body>
 
-<!-- 1 메인 -->
+<!-- 메인 -->
 <div id="main" class="screen active">
   <h1>CRUEL LI YU</h1>
-  <button class="main-btn" onclick="goTo('binderScreen')">MY</button>
+  <button onclick="goTo('binderScreen')">MY</button>
 </div>
 
-<!-- 2 바인더 목록 -->
+<!-- 바인더 목록 -->
 <div id="binderScreen" class="screen">
   <h2>MY BINDER</h2>
-  <button onclick="goTo('coverScreen')">＋</button>
+  <div class="grid" id="binderList"></div>
+  <button onclick="goTo('createScreen')">＋</button>
 </div>
 
-<!-- 3 표지 선택 -->
-<div id="coverScreen" class="screen">
-  <h2>표지 선택</h2>
-  <div class="grid">
-    <div class="cover-option" style="background:#ffb6c1" onclick="selectCover('#ffb6c1')"></div>
-    <div class="cover-option" style="background:#87cefa" onclick="selectCover('#87cefa')"></div>
-    <div class="cover-option" style="background:#c3b1e1" onclick="selectCover('#c3b1e1')"></div>
-  </div>
+<!-- 바인더 생성 -->
+<div id="createScreen" class="screen">
+  <h2>색상 선택</h2>
+  <input type="color" id="colorPicker">
+  <button onclick="createBinder()">생성하기</button>
   <button onclick="goTo('binderScreen')">← 뒤로</button>
 </div>
 
-<!-- 4 속지 선택 -->
-<div id="layoutScreen" class="screen">
-  <h2>속지 선택</h2>
-  <button onclick="chooseLayout('one')">1칸</button>
-  <button onclick="chooseLayout('three')">3칸</button>
-  <button onclick="chooseLayout('four')">4칸</button>
-</div>
-
-<!-- 5 완성 화면 -->
-<div id="pageScreen" class="screen">
-  <h2>완성된 바인더</h2>
-  <div id="pagePreview"></div>
-  <button onclick="goTo('binderScreen')">홈으로</button>
-</div>
-
 <script>
-let selectedCoverColor = "#ffffff";
+let binders = [];
 
 function goTo(screenId){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
 }
 
-function selectCover(color){
-  selectedCoverColor = color;
-  goTo('layoutScreen');
+function createBinder(){
+  const color = document.getElementById('colorPicker').value;
+  const binder = {
+    id: Date.now(),
+    color: color
+  };
+  binders.push(binder);
+  renderBinders();
+  goTo('binderScreen');
 }
 
-function chooseLayout(type){
-  const page = document.createElement('div');
-  page.className = 'page '+type;
-  page.style.background = selectedCoverColor;
+function renderBinders(){
+  const list = document.getElementById('binderList');
+  list.innerHTML = '';
+  binders.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'binder';
+    div.style.background = b.color;
+    div.onclick = () => openBinder(b.color);
+    list.appendChild(div);
+  });
+}
 
-  let slots = 1;
-  if(type==='three') slots=3;
-  if(type==='four') slots=4;
-
-  for(let i=0;i<slots;i++){
-    const div=document.createElement('div');
-    div.className='slot';
-    page.appendChild(div);
-  }
-
-  const preview=document.getElementById('pagePreview');
-  preview.innerHTML='';
-  preview.appendChild(page);
-
-  goTo('pageScreen');
+function openBinder(color){
+  alert("바인더 열림! (다음 단계에서 열리는 모션 구현할 거야)");
 }
 </script>
 
