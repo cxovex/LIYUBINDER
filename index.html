@@ -45,7 +45,7 @@ button{
   justify-content:center;
   align-items:center;
   cursor:pointer;
-  transition:0.4s;
+  transition:0.3s;
 }
 
 .binder:hover{
@@ -56,6 +56,27 @@ button{
   display:flex;
   flex-wrap:wrap;
   justify-content:center;
+}
+
+/* 속지 */
+.page{
+  width:250px;
+  height:350px;
+  background:white;
+  border-radius:10px;
+  margin-top:20px;
+  display:grid;
+  gap:5px;
+  padding:10px;
+}
+
+.one{ grid-template-columns:1fr; }
+.three{ grid-template-columns:1fr; grid-template-rows:repeat(3,1fr); }
+.four{ grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); }
+
+.slot{
+  background:#eaeaea;
+  border-radius:5px;
 }
 </style>
 </head>
@@ -72,30 +93,50 @@ button{
 <div id="binderScreen" class="screen">
   <h2>MY BINDER</h2>
   <div class="grid" id="binderList"></div>
-  <button onclick="goTo('createScreen')">＋</button>
+  <button onclick="goTo('colorScreen')">＋</button>
 </div>
 
-<!-- 바인더 생성 -->
-<div id="createScreen" class="screen">
-  <h2>색상 선택</h2>
+<!-- 1️⃣ 색상 선택 -->
+<div id="colorScreen" class="screen">
+  <h2>바인더 색상 선택</h2>
   <input type="color" id="colorPicker">
-  <button onclick="createBinder()">생성하기</button>
+  <button onclick="goTo('layoutScreen')">다음</button>
   <button onclick="goTo('binderScreen')">← 뒤로</button>
+</div>
+
+<!-- 2️⃣ 속지 선택 -->
+<div id="layoutScreen" class="screen">
+  <h2>속지 선택</h2>
+  <button onclick="createBinder('one')">1칸</button>
+  <button onclick="createBinder('three')">3칸</button>
+  <button onclick="createBinder('four')">4칸</button>
+</div>
+
+<!-- 3️⃣ 바인더 내부 보기 -->
+<div id="pageScreen" class="screen">
+  <h2>속지</h2>
+  <div id="pagePreview"></div>
+  <button onclick="goTo('binderScreen')">홈으로</button>
 </div>
 
 <script>
 let binders = [];
+let selectedColor = "#ffffff";
 
 function goTo(screenId){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+
+  if(screenId === 'layoutScreen'){
+    selectedColor = document.getElementById('colorPicker').value;
+  }
 }
 
-function createBinder(){
-  const color = document.getElementById('colorPicker').value;
+function createBinder(layoutType){
   const binder = {
     id: Date.now(),
-    color: color
+    color: selectedColor,
+    layout: layoutType
   };
   binders.push(binder);
   renderBinders();
@@ -105,17 +146,35 @@ function createBinder(){
 function renderBinders(){
   const list = document.getElementById('binderList');
   list.innerHTML = '';
+
   binders.forEach(b => {
     const div = document.createElement('div');
     div.className = 'binder';
     div.style.background = b.color;
-    div.onclick = () => openBinder(b.color);
+    div.onclick = () => openBinder(b);
     list.appendChild(div);
   });
 }
 
-function openBinder(color){
-  alert("바인더 열림! (다음 단계에서 열리는 모션 구현할 거야)");
+function openBinder(binder){
+  const page = document.createElement('div');
+  page.className = 'page ' + binder.layout;
+
+  let slots = 1;
+  if(binder.layout === 'three') slots = 3;
+  if(binder.layout === 'four') slots = 4;
+
+  for(let i=0;i<slots;i++){
+    const div = document.createElement('div');
+    div.className = 'slot';
+    page.appendChild(div);
+  }
+
+  const preview = document.getElementById('pagePreview');
+  preview.innerHTML = '';
+  preview.appendChild(page);
+
+  goTo('pageScreen');
 }
 </script>
 
