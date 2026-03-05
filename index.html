@@ -8,27 +8,54 @@
 <style>
 body{
   margin:0;
-  background:#e5e5e5;
   font-family:sans-serif;
+  background:#e5e5e5;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
+  flex-direction:column;
 }
 
-/* 전체 영역 */
+/* 선택 화면 */
+.setup{
+  text-align:center;
+}
+
+.color-option{
+  width:60px;
+  height:60px;
+  display:inline-block;
+  margin:10px;
+  border-radius:8px;
+  cursor:pointer;
+  border:3px solid transparent;
+}
+
+.color-option.selected{
+  border:3px solid #000;
+}
+
+.sheet-option{
+  padding:10px 20px;
+  margin:10px;
+  background:#ddd;
+  cursor:pointer;
+  display:inline-block;
+}
+
+/* 바인더 영역 */
 .binder-wrapper{
   width:900px;
   height:500px;
   perspective:2000px;
   position:relative;
+  display:none;
 }
 
-/* 표지 */
 .cover{
   width:300px;
   height:500px;
-  background:black;
   border-radius:10px;
   position:absolute;
   left:300px;
@@ -41,49 +68,38 @@ body{
   transform:rotateY(-180deg);
 }
 
-/* 내부 영역 */
 .book{
   display:flex;
   width:900px;
   height:500px;
 }
 
-/* 왼쪽 고정 검정 */
 .left-spine{
   width:300px;
   height:500px;
-  background:black;
 }
 
-/* 페이지 영역 */
 .pages{
   display:flex;
   width:600px;
   height:500px;
-  overflow:hidden;
 }
 
-/* 한 페이지 (좌 or 우) */
 .page{
   width:300px;
   height:500px;
-  background:white;
   border:8px solid #555;
   box-sizing:border-box;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;
   gap:10px;
   padding:15px;
 }
 
-/* 포카칸 */
 .card-slot{
   background:#ddd;
   border-radius:6px;
 }
 
-/* 버튼 */
 .controls{
   position:absolute;
   bottom:-60px;
@@ -103,14 +119,37 @@ button{
 </head>
 <body>
 
-<div class="binder-wrapper">
+<div class="setup" id="setup">
+
+<h2>바인더 색 선택</h2>
+
+<div>
+  <div class="color-option" style="background:black" onclick="selectColor('black',this)"></div>
+  <div class="color-option" style="background:pink" onclick="selectColor('pink',this)"></div>
+  <div class="color-option" style="background:skyblue" onclick="selectColor('skyblue',this)"></div>
+</div>
+
+<h2>속지 선택</h2>
+
+<div>
+  <div class="sheet-option" onclick="selectSheet(4)">4칸</div>
+  <div class="sheet-option" onclick="selectSheet(9)">9칸</div>
+</div>
+
+<br>
+<button onclick="startBinder()">바인더 만들기</button>
+
+</div>
+
+
+<div class="binder-wrapper" id="binderWrapper">
 
   <div class="cover" id="cover"></div>
 
   <div class="book">
-    <div class="left-spine"></div>
+    <div class="left-spine" id="spine"></div>
 
-    <div class="pages" id="pages">
+    <div class="pages">
       <div class="page" id="leftPage"></div>
       <div class="page" id="rightPage"></div>
     </div>
@@ -124,30 +163,55 @@ button{
 </div>
 
 <script>
+let selectedColor = "black";
+let selectedSheet = 4;
+let currentSpread = 0;
+
+const spreads = ["normal","normal","last"];
+
 const cover = document.getElementById("cover");
+const spine = document.getElementById("spine");
 const leftPage = document.getElementById("leftPage");
 const rightPage = document.getElementById("rightPage");
 
-let currentSpread = 0;
+function selectColor(color,el){
+  selectedColor = color;
+  document.querySelectorAll(".color-option").forEach(c=>c.classList.remove("selected"));
+  el.classList.add("selected");
+}
 
-/* 총 3 스프레드 (너 그림 기준) */
-const spreads = [
-  "normal",
-  "normal",
-  "last"
-];
+function selectSheet(type){
+  selectedSheet = type;
+}
 
-/* 표지 열기 */
-cover.addEventListener("click", ()=>{
-  cover.classList.add("open");
+function startBinder(){
+  document.getElementById("setup").style.display="none";
+  document.getElementById("binderWrapper").style.display="block";
+
+  cover.style.background = selectedColor;
+  spine.style.background = selectedColor;
+
   renderSpread();
+}
+
+cover.addEventListener("click",()=>{
+  cover.classList.add("open");
 });
 
 function createPageContent(pageElement){
-  pageElement.innerHTML = "";
-  for(let i=0;i<4;i++){
-    const slot = document.createElement("div");
-    slot.className = "card-slot";
+  pageElement.innerHTML="";
+  
+  if(selectedSheet === 4){
+    pageElement.style.gridTemplateColumns="1fr 1fr";
+    pageElement.style.gridTemplateRows="1fr 1fr";
+  }else{
+    pageElement.style.gridTemplateColumns="1fr 1fr 1fr";
+    pageElement.style.gridTemplateRows="1fr 1fr 1fr";
+  }
+
+  for(let i=0;i<selectedSheet;i++){
+    const slot=document.createElement("div");
+    slot.className="card-slot";
     pageElement.appendChild(slot);
   }
 }
@@ -155,24 +219,24 @@ function createPageContent(pageElement){
 function renderSpread(){
   const type = spreads[currentSpread];
 
-  if(type === "normal"){
+  if(type==="normal"){
     createPageContent(leftPage);
     createPageContent(rightPage);
   }
 
-  if(type === "last"){
+  if(type==="last"){
     createPageContent(leftPage);
-    rightPage.innerHTML = "";
-    rightPage.style.background = "black";
-    rightPage.style.border = "none";
-  } else {
-    rightPage.style.background = "white";
-    rightPage.style.border = "8px solid #555";
+    rightPage.innerHTML="";
+    rightPage.style.background="black";
+    rightPage.style.border="none";
+  }else{
+    rightPage.style.background="white";
+    rightPage.style.border="8px solid #555";
   }
 }
 
 function nextPage(){
-  if(currentSpread < spreads.length - 1){
+  if(currentSpread < spreads.length-1){
     currentSpread++;
     renderSpread();
   }
