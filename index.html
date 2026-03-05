@@ -3,267 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHUEL LI YU</title>
+<title>CHUEL Binder</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#9fbcd3;
-  text-align:center;
-  color:white;
-  overflow:hidden;
-}
-
-/* 화면 */
-.screen{
-  display:none;
-  height:100vh;
+  background:#e5e5e5;
+  font-family:sans-serif;
+  display:flex;
   justify-content:center;
   align-items:center;
-  flex-direction:column;
-}
-.active{ display:flex; }
-
-button{
-  padding:10px 20px;
-  border:none;
-  border-radius:20px;
-  margin:10px;
-  cursor:pointer;
-  background:white;
-  color:#5d7f99;
-  font-weight:bold;
+  height:100vh;
 }
 
-/* 바인더 카드 디자인 업그레이드 */
-.binder{
-  width:130px;
-  height:170px;
-  border-radius:18px;
-  margin:15px;
-  cursor:pointer;
+/* 전체 영역 */
+.binder-wrapper{
+  width:900px;
+  height:500px;
+  perspective:2000px;
   position:relative;
-  box-shadow:0 8px 20px rgba(0,0,0,0.25);
-  transition:0.3s;
-}
-
-.binder::after{
-  content:'';
-  position:absolute;
-  right:10px;
-  top:0;
-  width:8px;
-  height:100%;
-  background:rgba(0,0,0,0.15);
-  border-radius:5px;
-}
-
-.binder:hover{
-  transform:scale(1.05);
-}
-
-.grid{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-/* ===== 책 구조 ===== */
-
-.book-container{
-  perspective:1500px;
-}
-
-.book{
-  width:500px;
-  height:350px;
-  position:relative;
-  transform-style:preserve-3d;
 }
 
 /* 표지 */
 .cover{
-  width:250px;
-  height:350px;
+  width:300px;
+  height:500px;
+  background:black;
+  border-radius:10px;
   position:absolute;
-  left:0;
-  top:0;
+  left:300px;
   transform-origin:left;
   transition:transform 1s ease;
-  border-radius:10px 0 0 10px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.3);
-  z-index:3;
+  z-index:5;
 }
 
-.book.open .cover{
+.cover.open{
   transform:rotateY(-180deg);
 }
 
-/* 펼쳐진 내부 */
-.inside{
-  position:absolute;
-  left:0;
-  top:0;
-  width:500px;
-  height:350px;
+/* 내부 영역 */
+.book{
   display:flex;
-  background:white;
-  border-radius:10px;
+  width:900px;
+  height:500px;
+}
+
+/* 왼쪽 고정 검정 */
+.left-spine{
+  width:300px;
+  height:500px;
+  background:black;
+}
+
+/* 페이지 영역 */
+.pages{
+  display:flex;
+  width:600px;
+  height:500px;
   overflow:hidden;
-  box-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 
-/* 왼쪽 페이지 */
-.left-page,
-.right-page{
-  width:50%;
-  height:100%;
-  padding:15px;
+/* 한 페이지 (좌 or 우) */
+.page{
+  width:300px;
+  height:500px;
+  background:white;
+  border:8px solid #555;
+  box-sizing:border-box;
   display:grid;
-  gap:8px;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:10px;
+  padding:15px;
 }
 
-/* 속지 레이아웃 */
-.one{ grid-template-columns:1fr; }
-.three{ grid-template-columns:1fr; grid-template-rows:repeat(3,1fr); }
-.four{ grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); }
-
-.slot{
-  background:#eaeaea;
+/* 포카칸 */
+.card-slot{
+  background:#ddd;
   border-radius:6px;
 }
 
-/* 페이지 넘김 효과 */
-.flip{
-  animation:flipPage 0.6s ease;
+/* 버튼 */
+.controls{
+  position:absolute;
+  bottom:-60px;
+  width:100%;
+  text-align:center;
 }
 
-@keyframes flipPage{
-  0%{ transform:rotateY(0); }
-  50%{ transform:rotateY(90deg); }
-  100%{ transform:rotateY(0); }
+button{
+  padding:10px 20px;
+  margin:0 10px;
+  border:none;
+  background:black;
+  color:white;
+  cursor:pointer;
 }
 </style>
 </head>
-
 <body>
 
-<!-- 메인 -->
-<div id="main" class="screen active">
-  <h1>CHUEL LI YU</h1>
-  <button onclick="goTo('binderScreen')">MY</button>
-</div>
+<div class="binder-wrapper">
 
-<!-- 바인더 목록 -->
-<div id="binderScreen" class="screen">
-  <h2>MY BINDER</h2>
-  <div class="grid" id="binderList"></div>
-  <button onclick="goTo('colorScreen')">＋</button>
-</div>
+  <div class="cover" id="cover"></div>
 
-<!-- 색상 선택 -->
-<div id="colorScreen" class="screen">
-  <h2>바인더 색상 선택</h2>
-  <input type="color" id="colorPicker">
-  <button onclick="goToLayout()">다음</button>
-</div>
+  <div class="book">
+    <div class="left-spine"></div>
 
-<!-- 속지 선택 -->
-<div id="layoutScreen" class="screen">
-  <h2>속지 선택</h2>
-  <button onclick="createBinder('one')">1칸</button>
-  <button onclick="createBinder('three')">3칸</button>
-  <button onclick="createBinder('four')">4칸</button>
-</div>
-
-<!-- 책 열리는 화면 -->
-<div id="openScreen" class="screen">
-  <div class="book-container">
-    <div class="book" id="book">
-      <div class="cover" id="cover"></div>
-
-      <div class="inside">
-        <div class="left-page" id="leftPage"></div>
-        <div class="right-page" id="rightPage"></div>
-      </div>
+    <div class="pages" id="pages">
+      <div class="page" id="leftPage"></div>
+      <div class="page" id="rightPage"></div>
     </div>
   </div>
 
-  <button onclick="flipPage()">페이지 넘기기</button>
-  <button onclick="goTo('binderScreen')">홈</button>
+  <div class="controls">
+    <button onclick="prevPage()">◀ 이전</button>
+    <button onclick="nextPage()">다음 ▶</button>
+  </div>
+
 </div>
 
 <script>
-let binders=[];
-let selectedColor="#ffffff";
+const cover = document.getElementById("cover");
+const leftPage = document.getElementById("leftPage");
+const rightPage = document.getElementById("rightPage");
 
-function goTo(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+let currentSpread = 0;
+
+/* 총 3 스프레드 (너 그림 기준) */
+const spreads = [
+  "normal",
+  "normal",
+  "last"
+];
+
+/* 표지 열기 */
+cover.addEventListener("click", ()=>{
+  cover.classList.add("open");
+  renderSpread();
+});
+
+function createPageContent(pageElement){
+  pageElement.innerHTML = "";
+  for(let i=0;i<4;i++){
+    const slot = document.createElement("div");
+    slot.className = "card-slot";
+    pageElement.appendChild(slot);
+  }
 }
 
-function goToLayout(){
-  selectedColor=document.getElementById('colorPicker').value;
-  goTo('layoutScreen');
-}
+function renderSpread(){
+  const type = spreads[currentSpread];
 
-function createBinder(layout){
-  binders.push({
-    id:Date.now(),
-    color:selectedColor,
-    layout:layout
-  });
-  renderBinders();
-  goTo('binderScreen');
-}
-
-function renderBinders(){
-  const list=document.getElementById('binderList');
-  list.innerHTML='';
-  binders.forEach(b=>{
-    const div=document.createElement('div');
-    div.className='binder';
-    div.style.background=b.color;
-    div.onclick=()=>openBinder(b);
-    list.appendChild(div);
-  });
-}
-
-function openBinder(binder){
-  const book=document.getElementById('book');
-  const cover=document.getElementById('cover');
-  const left=document.getElementById('leftPage');
-  const right=document.getElementById('rightPage');
-
-  cover.style.background=binder.color;
-
-  left.className='left-page '+binder.layout;
-  right.className='right-page '+binder.layout;
-
-  left.innerHTML='';
-  right.innerHTML='';
-
-  let slots=1;
-  if(binder.layout==='three') slots=3;
-  if(binder.layout==='four') slots=4;
-
-  for(let i=0;i<slots;i++){
-    const slot=document.createElement('div');
-    slot.className='slot';
-    left.appendChild(slot.cloneNode());
-    right.appendChild(slot.cloneNode());
+  if(type === "normal"){
+    createPageContent(leftPage);
+    createPageContent(rightPage);
   }
 
-  goTo('openScreen');
-
-  setTimeout(()=>{ book.classList.add('open'); },100);
+  if(type === "last"){
+    createPageContent(leftPage);
+    rightPage.innerHTML = "";
+    rightPage.style.background = "black";
+    rightPage.style.border = "none";
+  } else {
+    rightPage.style.background = "white";
+    rightPage.style.border = "8px solid #555";
+  }
 }
 
-function flipPage(){
-  const right=document.getElementById('rightPage');
-  right.classList.add('flip');
-  setTimeout(()=>{ right.classList.remove('flip'); },600);
+function nextPage(){
+  if(currentSpread < spreads.length - 1){
+    currentSpread++;
+    renderSpread();
+  }
+}
+
+function prevPage(){
+  if(currentSpread > 0){
+    currentSpread--;
+    renderSpread();
+  }
 }
 </script>
 
