@@ -17,57 +17,42 @@ body{
   color:white;
 }
 
-/* 화면 공통 */
-.screen{
-  display:none;
-  flex-direction:column;
-  align-items:center;
-}
+/* 화면 */
+.screen{ display:none; flex-direction:column; align-items:center; }
 .active{ display:flex; }
 
-/* 홈 */
-.home h1{
-  font-size:40px;
-}
-.home button{
-  margin-top:20px;
+/* 버튼 */
+button{
   padding:10px 20px;
+  margin:10px;
   border:none;
   border-radius:20px;
-  background:white;
-  color:#5d8aa8;
   cursor:pointer;
 }
 
-/* 선택 화면 */
-.setup{
-  text-align:center;
+/* 홈 */
+.home h1{ font-size:40px; }
+.home button{ background:white; color:#5d8aa8; }
+
+/* 바인더 목록 */
+.binder-list{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
-.color{
-  width:50px;
-  height:50px;
-  display:inline-block;
-  margin:10px;
-  border-radius:8px;
+/* + 버튼 */
+.plus{
+  font-size:40px;
   cursor:pointer;
 }
 
-.sheet{
-  padding:10px;
-  margin:10px;
-  background:#ddd;
-  display:inline-block;
-  cursor:pointer;
-  color:black;
-}
-
-/* 바인더 */
-.binder{
-  display:none;
+/* 책 */
+.book{
   width:800px;
   height:450px;
   position:relative;
+  perspective:2000px;
 }
 
 /* 표지 */
@@ -81,9 +66,7 @@ body{
   z-index:3;
 }
 
-.cover.open{
-  transform:rotateY(-160deg);
-}
+.cover.open{ transform:rotateY(-160deg); }
 
 /* 왼쪽 */
 .left{
@@ -106,102 +89,107 @@ body{
 }
 
 /* 포카칸 */
-.slot{
-  background:#ddd;
-}
-
-/* 버튼 */
-button{
-  padding:10px 20px;
-  margin:10px;
-  border:none;
-  cursor:pointer;
-}
+.slot{ background:#ddd; cursor:pointer; }
 </style>
 </head>
 
 <body>
 
-<!-- 1️⃣ 홈 -->
+<!-- 홈 -->
 <div id="home" class="screen active home">
   <h1>CHUEL LI YU</h1>
-  <p>PHOTO CARD BINDER</p>
-  <button onclick="goTo('setup')">MY</button>
+  <button onclick="goTo('list')">MY</button>
 </div>
 
-<!-- 2️⃣ 설정 -->
-<div id="setup" class="screen setup">
-
-<h3>색상 선택</h3>
-<div class="color" style="background:black" onclick="colorSelect('black')"></div>
-<div class="color" style="background:pink" onclick="colorSelect('pink')"></div>
-<div class="color" style="background:skyblue" onclick="colorSelect('skyblue')"></div>
-
-<h3>속지</h3>
-<div class="sheet" onclick="sheetSelect(4)">4칸</div>
-<div class="sheet" onclick="sheetSelect(9)">9칸</div>
-
-<button onclick="start()">바인더 만들기</button>
-
+<!-- 바인더 목록 -->
+<div id="list" class="screen">
+  <h2>MY BINDER</h2>
+  <div class="plus" onclick="goTo('color')">＋</div>
 </div>
 
-<!-- 3️⃣ 바인더 -->
-<div id="binder" class="screen binder">
+<!-- 색상 -->
+<div id="color" class="screen">
+  <h3>색상 선택</h3>
+  <input type="color" id="colorPicker">
+  <button onclick="goTo('sheet')">다음</button>
+</div>
 
-<div class="cover" id="cover"></div>
-<div class="left" id="left"></div>
-<div class="right" id="right"></div>
+<!-- 속지 -->
+<div id="sheet" class="screen">
+  <h3>속지 선택</h3>
+  <button onclick="start(1)">1칸</button>
+  <button onclick="start(3)">3칸</button>
+  <button onclick="start(4)">4칸</button>
+</div>
 
-<button onclick="next()">다음 ▶</button>
-<button onclick="goTo('home')">홈</button>
+<!-- 바인더 -->
+<div id="binder" class="screen">
+  <div class="book">
 
+    <div class="cover" id="cover"></div>
+    <div class="left" id="left"></div>
+    <div class="right" id="right"></div>
+
+  </div>
 </div>
 
 <script>
-let color="black";
-let sheet=4;
+let color="#000000";
+let layout=4;
 let page=0;
+const maxPage=20;
 
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function colorSelect(c){ color=c; }
-function sheetSelect(s){ sheet=s; }
+function start(type){
+  layout=type;
+  color=document.getElementById("colorPicker").value;
+  page=0;
 
-function start(){
   goTo('binder');
 
   document.getElementById("cover").style.background=color;
   document.getElementById("left").style.background=color;
 
-  render();
-
   setTimeout(()=>{
     document.getElementById("cover").classList.add("open");
   },100);
+
+  render();
 }
 
 function render(){
   const right=document.getElementById("right");
 
-  if(page===3){
+  // 마지막
+  if(page===maxPage){
     right.style.background="black";
     right.innerHTML="";
+    right.onclick=closeBinder;
     return;
   }
+
+  right.onclick=next;
 
   right.style.background="white";
   right.innerHTML="";
 
-  if(sheet===4){
-    right.style.gridTemplateColumns="1fr 1fr";
-  }else{
+  // 레이아웃
+  if(layout===1){
+    right.style.gridTemplateColumns="1fr";
+  }
+  if(layout===3){
     right.style.gridTemplateColumns="1fr 1fr 1fr";
   }
+  if(layout===4){
+    right.style.gridTemplateColumns="1fr 1fr";
+    right.style.gridTemplateRows="1fr 1fr";
+  }
 
-  for(let i=0;i<sheet;i++){
+  for(let i=0;i<layout;i++){
     const d=document.createElement("div");
     d.className="slot";
     right.appendChild(d);
@@ -209,10 +197,18 @@ function render(){
 }
 
 function next(){
-  if(page<3){
+  if(page < maxPage){
     page++;
     render();
   }
+}
+
+function closeBinder(){
+  document.getElementById("cover").classList.remove("open");
+
+  setTimeout(()=>{
+    goTo('home');
+  },800);
 }
 </script>
 
