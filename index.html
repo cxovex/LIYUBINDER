@@ -21,7 +21,6 @@ body{
 .screen{ display:none; flex-direction:column; align-items:center; }
 .active{ display:flex; }
 
-/* 버튼 */
 button{
   padding:10px 20px;
   margin:10px;
@@ -34,25 +33,11 @@ button{
 .home h1{ font-size:40px; }
 .home button{ background:white; color:#5d8aa8; }
 
-/* 바인더 목록 */
-.binder-list{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-}
-
-/* + 버튼 */
-.plus{
-  font-size:40px;
-  cursor:pointer;
-}
-
 /* 책 */
 .book{
   width:800px;
   height:450px;
   position:relative;
-  perspective:2000px;
 }
 
 /* 표지 */
@@ -63,33 +48,28 @@ button{
   left:250px;
   transform-origin:left;
   transition:1s;
-  z-index:3;
+  z-index:5;
 }
-
 .cover.open{ transform:rotateY(-160deg); }
 
-/* 왼쪽 */
-.left{
+/* 페이지 */
+.page{
   width:300px;
   height:450px;
-}
-
-/* 오른쪽 */
-.right{
-  width:300px;
-  height:450px;
-  background:white;
   border:6px solid #555;
+  background:white;
   display:grid;
   gap:10px;
   padding:10px;
   position:absolute;
-  left:500px;
   top:0;
 }
 
-/* 포카칸 */
-.slot{ background:#ddd; cursor:pointer; }
+.left{ left:200px; }
+.right{ left:500px; }
+
+/* 슬롯 */
+.slot{ background:#ddd; }
 </style>
 </head>
 
@@ -101,10 +81,10 @@ button{
   <button onclick="goTo('list')">MY</button>
 </div>
 
-<!-- 바인더 목록 -->
+<!-- 목록 -->
 <div id="list" class="screen">
   <h2>MY BINDER</h2>
-  <div class="plus" onclick="goTo('color')">＋</div>
+  <button onclick="goTo('color')">＋</button>
 </div>
 
 <!-- 색상 -->
@@ -127,17 +107,18 @@ button{
   <div class="book">
 
     <div class="cover" id="cover"></div>
-    <div class="left" id="left"></div>
-    <div class="right" id="right"></div>
+
+    <div class="page left" id="left"></div>
+    <div class="page right" id="right"></div>
 
   </div>
 </div>
 
 <script>
-let color="#000000";
+let color="#000";
 let layout=4;
-let page=0;
-const maxPage=20;
+let currentPage=0;
+const totalPages=20;
 
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -147,12 +128,11 @@ function goTo(id){
 function start(type){
   layout=type;
   color=document.getElementById("colorPicker").value;
-  page=0;
+  currentPage=0;
 
   goTo('binder');
 
   document.getElementById("cover").style.background=color;
-  document.getElementById("left").style.background=color;
 
   setTimeout(()=>{
     document.getElementById("cover").classList.add("open");
@@ -161,44 +141,70 @@ function start(type){
   render();
 }
 
-function render(){
-  const right=document.getElementById("right");
+/* 슬롯 생성 */
+function makeSlots(pageEl){
+  pageEl.innerHTML="";
 
-  // 마지막
-  if(page===maxPage){
-    right.style.background="black";
-    right.innerHTML="";
-    right.onclick=closeBinder;
-    return;
-  }
-
-  right.onclick=next;
-
-  right.style.background="white";
-  right.innerHTML="";
-
-  // 레이아웃
   if(layout===1){
-    right.style.gridTemplateColumns="1fr";
+    pageEl.style.gridTemplateColumns="1fr";
   }
   if(layout===3){
-    right.style.gridTemplateColumns="1fr 1fr 1fr";
+    pageEl.style.gridTemplateColumns="1fr 1fr 1fr";
   }
   if(layout===4){
-    right.style.gridTemplateColumns="1fr 1fr";
-    right.style.gridTemplateRows="1fr 1fr";
+    pageEl.style.gridTemplateColumns="1fr 1fr";
+    pageEl.style.gridTemplateRows="1fr 1fr";
   }
 
   for(let i=0;i<layout;i++){
     const d=document.createElement("div");
     d.className="slot";
-    right.appendChild(d);
+    pageEl.appendChild(d);
   }
 }
 
+/* 렌더 핵심 */
+function render(){
+  const left=document.getElementById("left");
+  const right=document.getElementById("right");
+
+  // 마지막 (뒷표지)
+  if(currentPage === totalPages){
+    makeSlots(left);
+    right.innerHTML="";
+    right.style.background="black";
+    right.onclick=closeBinder;
+    return;
+  }
+
+  right.style.background="white";
+
+  // 첫 페이지
+  if(currentPage === 0){
+    left.style.background=color;
+    left.innerHTML="";
+    makeSlots(right);
+  }
+  else{
+    makeSlots(left);
+    makeSlots(right);
+  }
+
+  // 클릭 이벤트
+  right.onclick = next;
+  left.onclick = prev;
+}
+
 function next(){
-  if(page < maxPage){
-    page++;
+  if(currentPage < totalPages){
+    currentPage++;
+    render();
+  }
+}
+
+function prev(){
+  if(currentPage > 0){
+    currentPage--;
     render();
   }
 }
