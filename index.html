@@ -3,18 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHUEL Binder</title>
+<title>CHUEL LI YU</title>
 
 <style>
 body{
   margin:0;
   font-family:sans-serif;
-  background:#e5e5e5;
+  background:#a9c3d6;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
+  color:white;
+}
+
+/* 화면 공통 */
+.screen{
+  display:none;
   flex-direction:column;
+  align-items:center;
+}
+.active{ display:flex; }
+
+/* 홈 */
+.home h1{
+  font-size:40px;
+}
+.home button{
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  border-radius:20px;
+  background:white;
+  color:#5d8aa8;
+  cursor:pointer;
 }
 
 /* 선택 화면 */
@@ -22,230 +44,174 @@ body{
   text-align:center;
 }
 
-.color-option{
-  width:60px;
-  height:60px;
+.color{
+  width:50px;
+  height:50px;
   display:inline-block;
   margin:10px;
   border-radius:8px;
   cursor:pointer;
-  border:3px solid transparent;
 }
 
-.color-option.selected{
-  border:3px solid #000;
-}
-
-.sheet-option{
-  padding:10px 20px;
+.sheet{
+  padding:10px;
   margin:10px;
   background:#ddd;
-  cursor:pointer;
   display:inline-block;
+  cursor:pointer;
+  color:black;
 }
 
-/* 바인더 영역 */
-.binder-wrapper{
-  width:900px;
-  height:500px;
-  perspective:2000px;
-  position:relative;
+/* 바인더 */
+.binder{
   display:none;
+  width:800px;
+  height:450px;
+  position:relative;
 }
 
+/* 표지 */
 .cover{
   width:300px;
-  height:500px;
-  border-radius:10px;
+  height:450px;
   position:absolute;
-  left:300px;
+  left:250px;
   transform-origin:left;
-  transition:transform 1s ease;
-  z-index:5;
+  transition:1s;
+  z-index:3;
 }
 
 .cover.open{
-  transform:rotateY(-180deg);
+  transform:rotateY(-160deg);
 }
 
-.book{
-  display:flex;
-  width:900px;
-  height:500px;
-}
-
-.left-spine{
+/* 왼쪽 */
+.left{
   width:300px;
-  height:500px;
+  height:450px;
 }
 
-.pages{
-  display:flex;
-  width:600px;
-  height:500px;
-}
-
-.page{
+/* 오른쪽 */
+.right{
   width:300px;
-  height:500px;
-  border:8px solid #555;
-  box-sizing:border-box;
+  height:450px;
+  background:white;
+  border:6px solid #555;
   display:grid;
   gap:10px;
-  padding:15px;
-}
-
-.card-slot{
-  background:#ddd;
-  border-radius:6px;
-}
-
-.controls{
+  padding:10px;
   position:absolute;
-  bottom:-60px;
-  width:100%;
-  text-align:center;
+  left:500px;
+  top:0;
 }
 
+/* 포카칸 */
+.slot{
+  background:#ddd;
+}
+
+/* 버튼 */
 button{
   padding:10px 20px;
-  margin:0 10px;
+  margin:10px;
   border:none;
-  background:black;
-  color:white;
   cursor:pointer;
 }
 </style>
 </head>
+
 <body>
 
-<div class="setup" id="setup">
-
-<h2>바인더 색 선택</h2>
-
-<div>
-  <div class="color-option" style="background:black" onclick="selectColor('black',this)"></div>
-  <div class="color-option" style="background:pink" onclick="selectColor('pink',this)"></div>
-  <div class="color-option" style="background:skyblue" onclick="selectColor('skyblue',this)"></div>
+<!-- 1️⃣ 홈 -->
+<div id="home" class="screen active home">
+  <h1>CHUEL LI YU</h1>
+  <p>PHOTO CARD BINDER</p>
+  <button onclick="goTo('setup')">MY</button>
 </div>
 
-<h2>속지 선택</h2>
+<!-- 2️⃣ 설정 -->
+<div id="setup" class="screen setup">
 
-<div>
-  <div class="sheet-option" onclick="selectSheet(4)">4칸</div>
-  <div class="sheet-option" onclick="selectSheet(9)">9칸</div>
+<h3>색상 선택</h3>
+<div class="color" style="background:black" onclick="colorSelect('black')"></div>
+<div class="color" style="background:pink" onclick="colorSelect('pink')"></div>
+<div class="color" style="background:skyblue" onclick="colorSelect('skyblue')"></div>
+
+<h3>속지</h3>
+<div class="sheet" onclick="sheetSelect(4)">4칸</div>
+<div class="sheet" onclick="sheetSelect(9)">9칸</div>
+
+<button onclick="start()">바인더 만들기</button>
+
 </div>
 
-<br>
-<button onclick="startBinder()">바인더 만들기</button>
+<!-- 3️⃣ 바인더 -->
+<div id="binder" class="screen binder">
 
-</div>
+<div class="cover" id="cover"></div>
+<div class="left" id="left"></div>
+<div class="right" id="right"></div>
 
-
-<div class="binder-wrapper" id="binderWrapper">
-
-  <div class="cover" id="cover"></div>
-
-  <div class="book">
-    <div class="left-spine" id="spine"></div>
-
-    <div class="pages">
-      <div class="page" id="leftPage"></div>
-      <div class="page" id="rightPage"></div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <button onclick="prevPage()">◀ 이전</button>
-    <button onclick="nextPage()">다음 ▶</button>
-  </div>
+<button onclick="next()">다음 ▶</button>
+<button onclick="goTo('home')">홈</button>
 
 </div>
 
 <script>
-let selectedColor = "black";
-let selectedSheet = 4;
-let currentSpread = 0;
+let color="black";
+let sheet=4;
+let page=0;
 
-const spreads = ["normal","normal","last"];
-
-const cover = document.getElementById("cover");
-const spine = document.getElementById("spine");
-const leftPage = document.getElementById("leftPage");
-const rightPage = document.getElementById("rightPage");
-
-function selectColor(color,el){
-  selectedColor = color;
-  document.querySelectorAll(".color-option").forEach(c=>c.classList.remove("selected"));
-  el.classList.add("selected");
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function selectSheet(type){
-  selectedSheet = type;
+function colorSelect(c){ color=c; }
+function sheetSelect(s){ sheet=s; }
+
+function start(){
+  goTo('binder');
+
+  document.getElementById("cover").style.background=color;
+  document.getElementById("left").style.background=color;
+
+  render();
+
+  setTimeout(()=>{
+    document.getElementById("cover").classList.add("open");
+  },100);
 }
 
-function startBinder(){
-  document.getElementById("setup").style.display="none";
-  document.getElementById("binderWrapper").style.display="block";
+function render(){
+  const right=document.getElementById("right");
 
-  cover.style.background = selectedColor;
-  spine.style.background = selectedColor;
+  if(page===3){
+    right.style.background="black";
+    right.innerHTML="";
+    return;
+  }
 
-  renderSpread();
-}
+  right.style.background="white";
+  right.innerHTML="";
 
-cover.addEventListener("click",()=>{
-  cover.classList.add("open");
-});
-
-function createPageContent(pageElement){
-  pageElement.innerHTML="";
-  
-  if(selectedSheet === 4){
-    pageElement.style.gridTemplateColumns="1fr 1fr";
-    pageElement.style.gridTemplateRows="1fr 1fr";
+  if(sheet===4){
+    right.style.gridTemplateColumns="1fr 1fr";
   }else{
-    pageElement.style.gridTemplateColumns="1fr 1fr 1fr";
-    pageElement.style.gridTemplateRows="1fr 1fr 1fr";
+    right.style.gridTemplateColumns="1fr 1fr 1fr";
   }
 
-  for(let i=0;i<selectedSheet;i++){
-    const slot=document.createElement("div");
-    slot.className="card-slot";
-    pageElement.appendChild(slot);
-  }
-}
-
-function renderSpread(){
-  const type = spreads[currentSpread];
-
-  if(type==="normal"){
-    createPageContent(leftPage);
-    createPageContent(rightPage);
-  }
-
-  if(type==="last"){
-    createPageContent(leftPage);
-    rightPage.innerHTML="";
-    rightPage.style.background="black";
-    rightPage.style.border="none";
-  }else{
-    rightPage.style.background="white";
-    rightPage.style.border="8px solid #555";
+  for(let i=0;i<sheet;i++){
+    const d=document.createElement("div");
+    d.className="slot";
+    right.appendChild(d);
   }
 }
 
-function nextPage(){
-  if(currentSpread < spreads.length-1){
-    currentSpread++;
-    renderSpread();
-  }
-}
-
-function prevPage(){
-  if(currentSpread > 0){
-    currentSpread--;
-    renderSpread();
+function next(){
+  if(page<3){
+    page++;
+    render();
   }
 }
 </script>
